@@ -22,7 +22,6 @@ BRIGHT_CYAN=$'\e[1;36m'
 WHITE=$'\e[0;37m'
 BRIGHT_WHITE=$'\e[1;37m'
 
-# OCHRE="\033[38;5;95m"
 OCHRE=$'\e[38;5;95m'
 
 COLOR_RESET="\033[0m"
@@ -61,6 +60,13 @@ function git_branch {
   fi
 }
 
+# Non-printing sequences such as color codes must be
+# surrounded by \[ and \] so their lengths are not
+# counted as part of the length of the prompt.
+function escape_string {
+  echo -e "\[$1\]"
+}
+
 # functions for controlling Terminal Window and Tab Titles
 function tabname {
   printf "\e]1;$1\a"
@@ -75,12 +81,21 @@ function tabname2 {
   tabname $last2
 }
 
-PS1="\n${BRIGHT_CYAN}\d \T  "       # current time
-PS1+="${YELLOW}\u@\H  "             # user@host
-# PS1+="${BRIGHT_GREEN}$(free)\n"     # free memory
-PS1+="${BRIGHT_PURPLE}\w"           # full path
-PS1+='$(tabname2) '                 # set the tab title
-PS1+="\[\$(git_color)\]"            # colors git status
-PS1+="\$(git_branch)\n"             # prints current branch
-PS1+="${WHITE}bash» "               # shell prompt
+# Key:
+#   \u  The name of the logged-in user
+#   \h  The hostname up to the first '.'
+#   \H  The full hostname
+#   \d  The current date
+#   \T  The current time
+#   \n  Newline
+#   \$  Shows a $ for a regular user or # for root user
+
+PS1="\n$(escape_string ${BRIGHT_CYAN})\d \T"       # current date and time
+# PS1+="  $(escape_string ${YELLOW})\u@\h"           # user@host
+# PS1+="  $(escape_string ${BRIGHT_GREEN})$(free)"   # free memory
+PS1+="  $(escape_string ${BRIGHT_PURPLE})\w"       # full path
+PS1+='$(tabname2)'                                 # set the tab title
+PS1+='$(git_color)'                                # colors git status
+PS1+=' $(git_branch)'                              # prints current branch
+PS1+="\n$(escape_string ${COLOR_RESET})\$ "        # shell prompt
 export PS1
